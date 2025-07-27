@@ -169,3 +169,6 @@ nul
 
 # Flake8 configuration
 .flake8
+
+# Temporarily ignore poetry.lock while we fix dependencies
+# poetry.lock

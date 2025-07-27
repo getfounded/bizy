@@ -33,7 +33,9 @@ jobs:
             poetry-${{ runner.os }}-
       
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry lock --no-update || poetry lock
+          poetry install --no-interaction
       
       - name: Run black
         run: poetry run black --check bizy tests
@@ -88,7 +90,9 @@ jobs:
             poetry-${{ runner.os }}-py${{ matrix.python-version }}-
       
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry lock --no-update || poetry lock
+          poetry install --no-interaction
       
       - name: Run tests with coverage
         env:
@@ -118,7 +122,9 @@ jobs:
         uses: snok/install-poetry@v1
       
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry lock --no-update || poetry lock
+          poetry install --no-interaction
       
       - name: Run bandit
         run: poetry run bandit -r bizy -f json -o bandit-report.json
