@@ -42,14 +42,6 @@ Bizy consists of several key components:
 - **FastMCP**: High-performance MCP implementations and tool coordination
 - **Zep AI**: Memory systems and temporal knowledge graphs
 
-This project is organized into sprints focusing on ecosystem contribution:
-
-- **Sprint 1**: Cross-Framework Foundation (Days 1-10)
-- **Sprint 2**: Advanced Multi-Framework Patterns (Days 11-20)
-- **Sprint 3**: Ecosystem Leadership Establishment (Days 21-30)
-
-See `CLAUDE.md` for detailed implementation tasks.
-
 ## Contributing
 
 We welcome contributions that enhance cross-framework business logic coordination. Please see our contribution guidelines in `/docs/community/contributing.md`.
