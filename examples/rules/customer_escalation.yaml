@@ -1,0 +1,77 @@
+# Customer Escalation Rule
+# This rule demonstrates multi-framework coordination for handling customer issues
+
+rule: customer_escalation
+name: Premium Customer Escalation
+description: Automatically escalate premium customers with negative sentiment
+priority: high
+enabled: true
+
+conditions:
+  all:
+    - field: sentiment_score
+      operator: less_than
+      value: 0.3
+      description: Customer sentiment is negative
+    - field: customer_tier
+      operator: equals
+      value: premium
+      description: Customer is premium tier
+    - field: interaction_count
+      operator: greater_than
+      value: 2
+      description: Multiple interactions without resolution
+
+actions:
+  # Analyze sentiment details using LangChain
+  - framework: langchain
+    action: analyze_sentiment_details
+    parameters:
+      model: gpt-4
+      temperature: 0.2
+      prompt_template: "Analyze the customer sentiment and provide key concerns"
+      output_field: sentiment_analysis
+    description: Deep analysis of customer sentiment
+
+  # Start escalation workflow in Temporal
+  - framework: temporal
+    action: start_escalation_workflow
+    parameters:
+      workflow_name: customer_escalation_workflow
+      priority: high
+      escalation_type: sentiment_based
+      customer_data: ${customer_context}
+    timeout: 30
+    description: Initiate escalation workflow
+
+  # Notify account manager via MCP toolkit
+  - framework: mcp_toolkit
+    action: notify_account_manager
+    parameters:
+      notification_type: urgent
+      channel: email
+      template: escalation_notification
+      include_sentiment: ${sentiment_analysis}
+    description: Alert account manager immediately
+
+  # Update customer record in Zep
+  - framework: zep
+    action: update_memory
+    parameters:
+      memory_type: customer_interaction
+      tags: ["escalation", "sentiment_issue"]
+      context: ${sentiment_analysis}
+    description: Record escalation in customer memory
+
+error_handling:
+  retry_count: 3
+  fallback_rule: standard_escalation
+  error_threshold: 2
+  notification_channels: ["ops_team", "customer_success_lead"]
+
+metadata:
+  author: system
+  version: "1.0"
+  tags: [customer_service, escalation, premium, sentiment]
+  sla: 5_minutes
+  compliance: ["gdpr", "ccpa"]

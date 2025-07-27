@@ -1,0 +1,118 @@
+# Fraud Detection Rule
+# Demonstrates complex condition evaluation and multi-framework response
+
+rule: fraud_detection_high_risk
+name: High Risk Transaction Fraud Detection
+description: Detect and respond to potentially fraudulent high-value transactions
+priority: critical
+enabled: true
+
+conditions:
+  any:
+    # High-value unusual pattern
+    - all:
+        - field: transaction.amount
+          operator: greater_than
+          value: 10000
+        - field: transaction.merchant.risk_score
+          operator: greater_than
+          value: 0.7
+    # Velocity check
+    - all:
+        - field: transaction.velocity.count_24h
+          operator: greater_than
+          value: 5
+        - field: transaction.velocity.total_24h
+          operator: greater_than
+          value: 5000
+    # Geographic anomaly
+    - all:
+        - field: transaction.location.country
+          operator: not_equals
+          value: ${customer.home_country}
+        - field: transaction.location.distance_from_last
+          operator: greater_than
+          value: 1000  # miles
+
+actions:
+  # Immediate transaction analysis
+  - framework: langchain
+    action: analyze_transaction_pattern
+    parameters:
+      model: gpt-4
+      analysis_type: fraud_detection
+      include_history: true
+      history_days: 30
+      output_field: fraud_analysis
+    timeout: 5
+    retry_count: 1
+    description: AI-powered transaction pattern analysis
+
+  # Create fraud investigation workflow
+  - framework: temporal
+    action: start_fraud_investigation
+    parameters:
+      workflow_name: fraud_investigation_workflow
+      priority: critical
+      transaction_id: ${transaction.id}
+      initial_analysis: ${fraud_analysis}
+      auto_block: true
+    description: Initiate formal investigation process
+
+  # Check against fraud database
+  - framework: mcp_toolkit
+    action: query_fraud_database
+    parameters:
+      query_type: similarity_search
+      merchant_id: ${transaction.merchant.id}
+      card_hash: ${transaction.card.hash}
+      time_window: 90_days
+      output_field: fraud_matches
+    description: Check historical fraud patterns
+
+  # Real-time semantic analysis
+  - framework: semantic_kernel
+    action: evaluate_fraud_probability
+    parameters:
+      inputs:
+        transaction_data: ${transaction}
+        fraud_analysis: ${fraud_analysis}
+        historical_matches: ${fraud_matches}
+      skills: ["fraud_detection", "risk_assessment"]
+      output_field: fraud_probability
+    description: Calculate fraud probability score
+
+  # Fast notification
+  - framework: fastmcp
+    action: send_fraud_alert
+    parameters:
+      channels: ["sms", "app_push", "email"]
+      priority: urgent
+      include_block_action: true
+      fraud_score: ${fraud_probability}
+    continue_on_error: true
+    description: Notify customer immediately
+
+  # Update fraud memory
+  - framework: zep
+    action: store_fraud_pattern
+    parameters:
+      pattern_type: potential_fraud
+      confidence: ${fraud_probability}
+      transaction_details: ${transaction}
+      analysis_results: ${fraud_analysis}
+      retention_days: 180
+    description: Store pattern for future detection
+
+error_handling:
+  retry_count: 1  # Minimal retries for time-sensitive fraud detection
+  fallback_rule: fraud_manual_review
+  notification_channels: ["fraud_team", "security_ops"]
+
+metadata:
+  author: fraud_team
+  version: "2.1"
+  tags: [fraud, security, high_risk, real_time]
+  sla: 2_seconds
+  regulatory_compliance: ["pci_dss", "sox"]
+  last_updated: "2024-01-15"

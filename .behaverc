@@ -1,0 +1,48 @@
+[behave]
+# Behave configuration for Business Logic Orchestrator
+
+# Test discovery
+paths = features
+step_path = features/steps
+
+# Output format
+format = pretty
+show_skipped = false
+show_timings = true
+show_multiline = true
+
+# Logging
+logging_level = INFO
+logging_format = %(levelname)-8s %(name)s: %(message)s
+
+# Tags for test organization
+default_tags = 
+tags = @smoke,@integration,@cross_framework
+
+# Parallel execution (if supported)
+jobs = 1
+
+# Stop on first failure for debugging
+stop = false
+
+# Include scenario outlines
+include_re = .*\.(feature|story)$
+exclude_re = .*\.backup\..*
+
+# JSON output for CI/CD integration
+json = reports/behave_results.json
+json.pretty = true
+
+# JUnit XML output
+junit = true
+junit_directory = reports/junit
+
+# Allure reporting (if allure-behave is installed)
+# allure_output = reports/allure
+
+[behave.userdata]
+# Custom configuration for business logic orchestrator
+orchestrator.timeout = 60
+frameworks.mock_mode = true
+logging.capture = true
+test.environment = development

@@ -1,0 +1,14 @@
+include README.md
+include LICENSE
+include pyproject.toml
+recursive-include bizy *.py
+recursive-include bizy *.yaml
+recursive-include bizy *.yml
+recursive-include tests *.py
+recursive-include tests *.yaml
+recursive-include tests *.yml
+recursive-include docs *.md
+recursive-include docs *.rst
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store

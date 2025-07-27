@@ -1,0 +1,122 @@
+# Inventory Optimization Rule
+# Demonstrates business logic for supply chain optimization
+
+rule: inventory_optimization_reorder
+name: Intelligent Inventory Reorder
+description: Automatically optimize inventory levels using predictive analytics
+priority: medium
+enabled: true
+
+conditions:
+  all:
+    # Low stock condition
+    - field: inventory.current_stock
+      operator: less_than
+      value: ${inventory.reorder_point}
+      description: Stock below reorder threshold
+    
+    # Not already ordered
+    - field: inventory.pending_orders
+      operator: equals
+      value: 0
+      description: No pending orders exist
+    
+    # Product is active
+    - field: product.status
+      operator: equals
+      value: active
+      description: Product is actively sold
+
+actions:
+  # Predict future demand
+  - framework: langchain
+    action: predict_demand
+    parameters:
+      model: demand_forecast_model
+      historical_days: 90
+      include_seasonality: true
+      include_trends: true
+      external_factors: ["weather", "events", "promotions"]
+      output_field: demand_forecast
+    description: ML-based demand prediction
+
+  # Calculate optimal order quantity
+  - framework: semantic_kernel
+    action: calculate_optimal_order
+    parameters:
+      demand_forecast: ${demand_forecast}
+      current_stock: ${inventory.current_stock}
+      lead_time_days: ${supplier.lead_time}
+      safety_stock_factor: 1.5
+      constraints:
+        min_order: ${supplier.min_order_quantity}
+        max_order: ${warehouse.available_space}
+        budget: ${procurement.available_budget}
+      output_field: optimal_order
+    description: Economic order quantity calculation
+
+  # Create purchase order workflow
+  - framework: temporal
+    action: create_purchase_order
+    parameters:
+      workflow_name: automated_procurement_workflow
+      supplier_id: ${supplier.id}
+      product_id: ${product.id}
+      quantity: ${optimal_order.quantity}
+      expedite: ${optimal_order.expedite}
+      approval_required: ${optimal_order.requires_approval}
+    depends_on: ["calculate_optimal_order"]
+    description: Initiate procurement process
+
+  # Check supplier availability
+  - framework: mcp_toolkit
+    action: query_supplier_api
+    parameters:
+      supplier_endpoint: ${supplier.api_endpoint}
+      check_type: availability
+      product_sku: ${product.sku}
+      quantity: ${optimal_order.quantity}
+      output_field: supplier_availability
+    timeout: 10
+    description: Real-time supplier inventory check
+
+  # Fast execution of order placement
+  - framework: fastmcp
+    action: place_order
+    parameters:
+      order_data: ${optimal_order}
+      supplier_confirmation: ${supplier_availability}
+      payment_method: ${procurement.default_payment}
+      shipping_priority: ${optimal_order.shipping_priority}
+      output_field: order_confirmation
+    depends_on: ["query_supplier_api"]
+    description: Execute order placement
+
+  # Update inventory memory
+  - framework: zep
+    action: update_inventory_history
+    parameters:
+      action_type: reorder
+      product_id: ${product.id}
+      order_details: ${order_confirmation}
+      forecast_data: ${demand_forecast}
+      decision_factors:
+        current_stock: ${inventory.current_stock}
+        reorder_point: ${inventory.reorder_point}
+        lead_time: ${supplier.lead_time}
+      tags: ["automated_reorder", "optimization"]
+    description: Maintain inventory decision history
+
+error_handling:
+  retry_count: 2
+  fallback_rule: manual_reorder_alert
+  error_threshold: 1
+  notification_channels: ["procurement_team", "warehouse_manager"]
+
+metadata:
+  author: supply_chain_team
+  version: "1.3"
+  tags: [inventory, optimization, automation, supply_chain]
+  business_impact: high
+  cost_savings_potential: 15_percent
+  review_frequency: monthly
