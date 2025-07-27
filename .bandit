@@ -1,0 +1,7 @@
+# Bandit configuration file
+[bandit]
+# Skip test files
+exclude_dirs = ['/tests', '/venv', '/.venv', '/test']
+
+# Skip specific test IDs that are not relevant
+skips = ['B101', 'B601']

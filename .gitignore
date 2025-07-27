@@ -166,3 +166,6 @@ config/production.*
 
 # Accidental files
 nul
+
+# Flake8 configuration
+.flake8
