@@ -31,9 +31,7 @@
   width: 100%;
   height: 100%;
   opacity: 0.1;
-  background-image: url('/img/hero-pattern.svg');
-  background-repeat: repeat;
-  background-size: 400px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .featureIcon {
