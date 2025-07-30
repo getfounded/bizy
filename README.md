@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/getfounded-bizy-badge.png)](https://mseep.ai/app/getfounded-bizy)
+
 # Bizy
 The business logic orchestration layer for AI agents. Works with MCP, A2A, Temporal, Langchain, Mem0, Crew AI, Semantic Kernel, Graphiti, Zep AI, and Fast MCP 2.0.
 
